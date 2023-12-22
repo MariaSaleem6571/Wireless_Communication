@@ -29,13 +29,13 @@ int one_data_counter = 0;
 int trans_delay = 0;
 int trans_i = 0;
 
-int width = 16*8;
-int height = 1;
+int width = 64;
+int height = 64;
 String image = "";
 
 void checkStart(int start_duration)
 {
-  if (is_measure_start == 0)
+  if (!is_measure_start)
   {
     start_t = millis();
 //    sstate = "Start Starting pulse";
@@ -89,11 +89,13 @@ void checkDataPulse()
   int duration = int(millis() - start_t);
   if (duration > 0.7*trans_delay)
   {
-    if ((data_idx+1)%N_DATA == 0)
+//    if (!((data_idx+1)%N_DATA))
+    if (data_idx%N_DATA == 0 && data_idx != 0)
     {
       check_sum |= (0x00 << bit_idx);
     }
-    else if (checksum_idx < N_SUM)
+//    else if (checksum_idx < N_SUM)
+    else if (checksum_idx < N_SUM || data_idx == 0)
     {
       data[data_idx] |= (0x00 << bit_idx); 
     }
@@ -104,11 +106,11 @@ void checkDataPulse()
     one_data_counter++;
     if (one_data_counter >= 2)
     {
-      if ((data_idx+1)%N_DATA == 0)
+      if (data_idx%N_DATA == 0 && data_idx != 0)
       {
         check_sum |= (0x01 << bit_idx);
       }
-      else if (checksum_idx < N_SUM)
+      else if (checksum_idx < N_SUM || data_idx == 0)
       {
         data[data_idx] |= (0x01 << bit_idx); 
       }
@@ -120,7 +122,7 @@ void checkDataPulse()
   if (bit_idx >= N_BIT)
   {
     bit_idx = 0;
-    if ((data_idx+1)%N_DATA == 0)
+    if (!((data_idx+1)%N_DATA))
     {
 //      showData(check_sum);
       checksum_idx++;
@@ -199,7 +201,7 @@ void showImage()
   for(int im_idx=0; im_idx < sizeof(data)/sizeof(byte); im_idx++)
   {
     showOneChar(im_idx);
-    if ((im_idx+1)%(width/8) == 0)
+    if (!((im_idx+1)%(width/8)))
     {     
       Serial.println(image);
       image = "";
